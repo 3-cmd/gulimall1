@@ -1,0 +1,20 @@
+server:
+  port: 9000
+spring:
+  application:
+    name: order
+  cloud:
+    nacos:
+      server-addr: 127.0.0.1:8848 #nacos服务地址
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://192.168.24.133:3306/gulimall_oms?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
+      username: root
+      password: 123456
+
+mybatis-plus:
+  mapper-locations: classpath:/mapper/**/*.xml
+  global-config:
+    db-config:
+      id-type: auto
