@@ -1,6 +1,9 @@
 spring:
   cloud:
     nacos:
-      server-addr: 127.0.0.1
+      discovery:
+        server-addr: 127.0.0.1:8848
       config:
-        namespace: f8e3818b-bb5f-404b-b3a9-55bd987aa1c4
+        server-addr: 127.0.0.1
+  application:
+    name: gateway

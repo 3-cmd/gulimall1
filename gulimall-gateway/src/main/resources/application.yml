@@ -1,21 +1,40 @@
+
 spring:
   main:
     web-application-type: reactive
   cloud:
     nacos:
-      server-addr: 127.0.0.1:8848
+      discovery:
+        server-addr: 127.0.0.1:8848
+      config:
+        server-addr: 127.0.0.1
     gateway:
       routes:
-        - id: test_route
-          uri: https://www.baidu.com #路由的目标地址
+        - id: admin_route
+          uri: lb://renren-fast #lb://renren-fast #lb://根据微服务名称从注册中心拉取服务请求路径   uri代表路由的目标地址路由的目标地址
+          #前端项目,将所有的请求发送到 http://localhost:88/api这个请求,网关将这个请求拦截,并且重写该请求地址
           predicates:
-            - Query=url,baidu
+            - Path=/api/**  #以 /api开头的请求 ,全部转换为如下的请求路径
+          filters:
+            - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}
+            #这里加renren-fast 是因为在访问时,renren-fast这个项目配置了访问的路径,必须加一个renren-fast
+            #将 /api/..  写为后面的路径,这里将/api进行截取  这里是官网的格式
+            #http://localhost:88/api/captcha.jpg -> http://localhost:8080/captcha.jpg
+#        - id: test_route
+#          uri: https://www.baidu.com #路由的目标地址
+#          predicates:
+#            - Query=url,baidu
         - id: qq_route
           uri: https://www.qq.com
           predicates:
-            - Query=url,qq
+            - Path=/api/**
+          filters:
+            - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}
 
-#  application:
-#    name: gateway
+  application:
+    name: gateway
 server:
   port: 12000
+logging:
+  level:
+    org.springframework.cloud.gateway: trace
