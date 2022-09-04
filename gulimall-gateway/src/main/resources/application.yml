@@ -10,7 +10,13 @@ spring:
         server-addr: 127.0.0.1
     gateway:
       routes:
-        - id: admin_route
+        - id: product_route #商品服务的路由
+          uri: lb://product
+          predicates:
+            - Path=/api/product/** #清晰的请求放到高优先级 相交于/api/**,这个请求更为清晰
+          filters:
+            - RewritePath=/api/(?<segment>.*),/$\{segment} #请求路径将api前缀去掉
+        - id: admin_route #后台系统的路由
           uri: lb://renren-fast #lb://renren-fast #lb://根据微服务名称从注册中心拉取服务请求路径   uri代表路由的目标地址路由的目标地址
           #前端项目,将所有的请求发送到 http://localhost:88/api这个请求,网关将这个请求拦截,并且重写该请求地址
           predicates:
@@ -24,12 +30,7 @@ spring:
 #          uri: https://www.baidu.com #路由的目标地址
 #          predicates:
 #            - Query=url,baidu
-        - id: qq_route
-          uri: https://www.qq.com
-          predicates:
-            - Path=/api/**
-          filters:
-            - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}
+
 
   application:
     name: gateway

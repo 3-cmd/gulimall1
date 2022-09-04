@@ -2,6 +2,7 @@ package com.cs.gulimall.product.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cs.common.utils.PageUtils;
+import com.cs.common.utils.R;
 import com.cs.gulimall.product.entity.CategoryEntity;
 
 import java.util.List;
@@ -19,5 +20,7 @@ public interface CategoryService extends IService<CategoryEntity> {
     PageUtils queryPage(Map<String, Object> params);
 
     List<CategoryEntity> listWithTree();
+
+    String removeMenusByIds(List<Long> asList);
 }
 

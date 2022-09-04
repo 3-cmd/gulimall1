@@ -1,0 +1,10 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+      config:
+        server-addr: 127.0.0.1
+        namespace: 456e0fd9-b708-46a1-b2d7-d89b39a28596
+  application:
+    name: product
