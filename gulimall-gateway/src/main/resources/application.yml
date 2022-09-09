@@ -10,6 +10,12 @@ spring:
         server-addr: 127.0.0.1
     gateway:
       routes:
+        - id: third_party #第三方服务路由
+          uri: lb://third-party
+          predicates:
+            - Path=/api/thirdparty/**
+          filters:
+            - RewritePath=/api/(?<segment>.*),/$\{segment} #请求路径将api前缀去掉
         - id: product_route #商品服务的路由
           uri: lb://product
           predicates:
@@ -18,14 +24,14 @@ spring:
             - RewritePath=/api/(?<segment>.*),/$\{segment} #请求路径将api前缀去掉
         - id: admin_route #后台系统的路由
           uri: lb://renren-fast #lb://renren-fast #lb://根据微服务名称从注册中心拉取服务请求路径   uri代表路由的目标地址路由的目标地址
-          #前端项目,将所有的请求发送到 http://localhost:88/api这个请求,网关将这个请求拦截,并且重写该请求地址
+          #前端项目,将所有的请求发送到 http://localhost:12000/api这个请求,网关将这个请求拦截,并且重写该请求地址
           predicates:
             - Path=/api/**  #以 /api开头的请求 ,全部转换为如下的请求路径
           filters:
             - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}
             #这里加renren-fast 是因为在访问时,renren-fast这个项目配置了访问的路径,必须加一个renren-fast
             #将 /api/..  写为后面的路径,这里将/api进行截取  这里是官网的格式
-            #http://localhost:88/api/captcha.jpg -> http://localhost:8080/captcha.jpg
+            #http://localhost:12000/api/captcha.jpg -> http://localhost:8080/captcha.jpg
 #        - id: test_route
 #          uri: https://www.baidu.com #路由的目标地址
 #          predicates:

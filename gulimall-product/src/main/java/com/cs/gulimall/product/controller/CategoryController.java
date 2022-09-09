@@ -50,8 +50,7 @@ public class CategoryController {
     //@RequiresPermissions("product:category:info")
     public R info(@PathVariable("catId") Long catId){
 		CategoryEntity category = categoryService.getById(catId);
-
-        return R.ok().put("category", category);
+        return R.ok().put("data", category);
     }
 
     /**
@@ -61,8 +60,7 @@ public class CategoryController {
     //@RequiresPermissions("product:category:save")
     public R save(@RequestBody CategoryEntity category){
 		categoryService.save(category);
-
-        return R.ok();
+        return R.ok("保存成功");
     }
 
     /**
@@ -72,9 +70,17 @@ public class CategoryController {
     //@RequiresPermissions("product:category:update")
     public R update(@RequestBody CategoryEntity category){
 		categoryService.updateById(category);
-        return R.ok();
+        return R.ok("菜单修改成功");
     }
-
+    /**
+     * 批量修改
+     */
+    @RequestMapping("/update/sort")
+    //@RequiresPermissions("product:category:update")
+    public R updateSort(@RequestBody CategoryEntity[] category){
+        categoryService.updateBatchById(Arrays.asList(category));
+        return R.ok("拖拽成功");
+    }
     /**
      * 删除
      */
@@ -82,10 +88,8 @@ public class CategoryController {
     //@RequiresPermissions("product:category:delete")
     public R delete(@RequestBody Long[] catIds){
         //使用数组(Array)的工具类Arrays将数组转为list集合
-        String result = categoryService.removeMenusByIds(Arrays.asList(catIds));
-        if (result.equals("error")){
-            return R.error("所选数据存在子数据,删除失败");
-        }
+//        String result = categoryService.removeMenusByIds(Arrays.asList(catIds));
+        categoryService.removeMenusByIds(Arrays.asList(catIds));
         return R.ok("删除成功");
 
     }

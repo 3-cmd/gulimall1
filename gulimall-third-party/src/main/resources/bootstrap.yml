@@ -1,0 +1,11 @@
+spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: 127.0.0.1:8848
+        namespace: a6eace04-aaee-4edc-8802-992ac99cff57
+        extension-configs[0]:
+          data-id: oss.yaml
+          # 默认为DEFAULT_GROUP
+          group: DEFAULT_GROUP
+          # 是否动态刷新，默认为false

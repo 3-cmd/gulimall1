@@ -5,6 +5,12 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848 #nacos服务地址
+        #阿里oss配置
+    alicloud:
+      access-key: LTAI5tGiAaoP7sTWXnVd7z95
+      secret-key: 3glPaqvKbo8m5Jm50B42HJYmyjTSFf
+      oss:
+        endpoint: oss-cn-beijing.aliyuncs.com
   datasource:
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
