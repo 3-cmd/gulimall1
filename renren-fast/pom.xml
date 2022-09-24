@@ -9,7 +9,7 @@
 	<description>renren-fast</description>
 
 	<parent>
-		<artifactId>gulimall-member</artifactId>
+		<artifactId>gulimall1</artifactId>
 		<groupId>com.cs.gulimall</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>

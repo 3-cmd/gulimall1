@@ -22,6 +22,12 @@ spring:
             - Path=/api/product/** #清晰的请求放到高优先级 相交于/api/**,这个请求更为清晰
           filters:
             - RewritePath=/api/(?<segment>.*),/$\{segment} #请求路径将api前缀去掉
+        - id: member_route #人员路由
+          uri: lb://member
+          predicates:
+            - Path=/api/member/** #清晰的请求放到高优先级 相交于/api/**,这个请求更为清晰
+          filters:
+            - RewritePath=/api/(?<segment>.*),/$\{segment} #请求路径将api前缀去掉
         - id: admin_route #后台系统的路由
           uri: lb://renren-fast #lb://renren-fast #lb://根据微服务名称从注册中心拉取服务请求路径   uri代表路由的目标地址路由的目标地址
           #前端项目,将所有的请求发送到 http://localhost:12000/api这个请求,网关将这个请求拦截,并且重写该请求地址
