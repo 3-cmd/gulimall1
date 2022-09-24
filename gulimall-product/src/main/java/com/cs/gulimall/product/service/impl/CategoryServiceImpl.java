@@ -2,6 +2,9 @@ package com.cs.gulimall.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cs.common.utils.R;
+import com.cs.gulimall.product.dao.CategoryBrandRelationDao;
+import com.cs.gulimall.product.entity.CategoryBrandRelationEntity;
+import com.cs.gulimall.product.service.CategoryBrandRelationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +30,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Autowired
     private CategoryDao categoryDao;
+    @Autowired
+    private CategoryBrandRelationService categoryBrandRelationService;
+
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<CategoryEntity> page = this.page(
@@ -38,7 +44,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     }
 
     /**
-     *
      * @return
      */
     @Override
@@ -50,16 +55,17 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         List<CategoryEntity> level1Menus = categoryEntityList.stream().filter(categoryEntity -> {
             //第一级分类的父id为0
             return categoryEntity.getParentCid() == 0;
-        }).map(menu->{
-            menu.setChildren(getChildren(menu,categoryEntityList));
+        }).map(menu -> {
+            menu.setChildren(getChildren(menu, categoryEntityList));
             return menu;
-        }).sorted((menu1,menu2)->{
-            return (menu1.getSort()==null?0:menu1.getSort())-(menu2.getSort()==null?0:menu2.getSort());
+        }).sorted((menu1, menu2) -> {
+            return (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort());
         }).collect(Collectors.toList());
         //2.2 为每一个分类设置他的子分类
 
         return level1Menus;
     }
+
     /**
      * 这个方法是将所有数据的进行分级
      *
@@ -67,7 +73,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
      * @param all
      * @return
      */
-    private List<CategoryEntity> getChildren(CategoryEntity root,List<CategoryEntity> all){
+    private List<CategoryEntity> getChildren(CategoryEntity root, List<CategoryEntity> all) {
         //root代表每一级分类,初始为第一级分类
         //获取到所有分类的数据,每一条数据都存在id与parent_id属性,当这两个属性
         //相等时,将parent_id相等的那一条数据设置为id相等的那条数据的儿子就可以
@@ -77,7 +83,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             categoryEntity.setChildren(getChildren(categoryEntity, all));
             return categoryEntity;
         }).sorted((menu1, menu2) -> {
-            return (menu1.getSort()==null?0:menu1.getSort())-(menu2.getSort()==null?0:menu2.getSort());
+            return (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort());
         }).collect(Collectors.toList());
         return children;
 
@@ -86,6 +92,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     /**
      * 批量删除菜单选项,并且当该菜单存在子节点时不能删除
      * 传入的参数为多项数据的id值
+     *
      * @param idList
      */
     @Override
@@ -93,7 +100,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         // TODO
         // 1.这里先自行定义,将存在子类的数据设置为无法删除
         //将idList进行遍历,通过每一个id查询其有无作为parent_cid的数据,如果该id作为parent_cid查询出数据,说明该id对应的数据存在子类,那么将这个
-           //数据过滤出来进行收集成一个集合,该集合中所有的元素代表着存在子类的元素,如果元素个数大于0个,代表我们选中的数据存在子类无法删除
+        //数据过滤出来进行收集成一个集合,该集合中所有的元素代表着存在子类的元素,如果元素个数大于0个,代表我们选中的数据存在子类无法删除
         //filter()代表着满足条件则进行收集
 //        List<Long> ResultList = idList.stream()
 //                .filter(id->categoryDao.selectList(new LambdaQueryWrapper<CategoryEntity>().eq(CategoryEntity::getParentCid,id)).size()!=0)
@@ -104,6 +111,22 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 //        categoryDao.deleteBatchIds(idList);
 //        return "success";
         categoryDao.deleteBatchIds(idList);
+    }
+
+    @Override
+    public void updateDetails(CategoryEntity category) {
+        //先进行查询查看name是否改变
+        Long catId = category.getCatId();
+        CategoryEntity categoryEntity = categoryDao.selectById(catId);
+        String oldName = categoryEntity.getName();//未修改时的旧名称
+        //这里先将分类数据进行修改
+        categoryDao.updateById(category);
+        //如果oldName与新传递的名称不相同,进行其他表中的更新操作
+        if (!oldName.equals(category.getName())) {
+            //修改完成后,将使用到该数据的其他数据进行修改,保证数据的一致性
+            // 例如在分类信息时,用到了该项数据,进行及时的更新即可
+            categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
+        }
     }
 
 

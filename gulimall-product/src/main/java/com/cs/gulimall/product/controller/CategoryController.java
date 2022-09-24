@@ -69,7 +69,9 @@ public class CategoryController {
     @RequestMapping("/update")
     //@RequiresPermissions("product:category:update")
     public R update(@RequestBody CategoryEntity category){
-		categoryService.updateById(category);
+        //在修改分类数据时,修改完成后,将使用到该数据的表中的数据也进行修改
+
+		categoryService.updateDetails(category);
         return R.ok("菜单修改成功");
     }
     /**

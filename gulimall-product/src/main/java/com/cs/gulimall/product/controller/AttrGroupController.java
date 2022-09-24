@@ -6,11 +6,7 @@ import java.util.Map;
 
 import com.cs.gulimall.product.entity.CategoryEntity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.cs.gulimall.product.entity.AttrGroupEntity;
 import com.cs.gulimall.product.service.AttrGroupService;
@@ -37,12 +33,18 @@ public class AttrGroupController {
      */
     @RequestMapping("/list/{catelogId}")
     //@RequiresPermissions("product:attrgroup:list")
-    public R list(@RequestParam Map<String, Object> params
-            ,@PathVariable("catelogId") Long catelogId){
+    public R list(@PathVariable("catelogId") Long catelogId , @RequestParam Map<String, Object> params){
 //        PageUtils page = attrGroupService.queryPage(params);
         PageUtils page = attrGroupService.queryPageByCatelogId(params,catelogId);
         return R.ok().put("page", page);
     }
+
+    /**
+     * 查询全部的信息
+     * @param attrGroupId
+     * @return
+     */
+    @GetMapping("/{}/attr/relation")
 
 
     /**

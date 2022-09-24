@@ -22,7 +22,7 @@ public class GulimallExceptionControllerAdvice {
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public R handleVaildException(MethodArgumentNotValidException e){
 
-        log.error("数据校验出现问题{},一场类型{}",e.getMessage(),e.getClass());
+        log.error("数据校验出现问题{},异常类型{}",e.getMessage(),e.getClass());
         BindingResult bindingResult = e.getBindingResult();
         Map<String,Object> map=new HashMap<>();
         bindingResult.getFieldErrors().forEach(item->{

@@ -87,7 +87,9 @@ public class BrandController {
     @RequestMapping("/update")
     //@RequiresPermissions("product:brand:update")
     public R update(@Validated(value = {UpdateGroup.class}) @RequestBody BrandEntity brand) {
-        brandService.updateById(brand);
+        //我们在更新brand表的同时,也应该将使用到该表中信息进行更新,例如在categoryBranRelation中使用到了brand中的数据
+        //所以在修改brand表的数据的同时,也要将它也改掉
+        brandService.updateDetails(brand);
         return R.ok("修改成功");
     }
     /**
