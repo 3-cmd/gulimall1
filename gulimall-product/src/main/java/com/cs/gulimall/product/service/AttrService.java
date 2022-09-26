@@ -6,6 +6,7 @@ import com.cs.gulimall.product.entity.AttrEntity;
 import com.cs.gulimall.product.vo.AttrResponseVo;
 import com.cs.gulimall.product.vo.AttrVo;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,12 +18,15 @@ import java.util.Map;
  */
 public interface AttrService extends IService<AttrEntity> {
 
-    PageUtils queryPage(Long  catelogId, Map<String, Object> params);
+    PageUtils queryPageSale(Long  catelogId, Map<String, Object> params);
 
     void save(AttrVo attr);
 
     AttrResponseVo getAttr(Long attrId);
 
     void updateAttr(AttrVo attr);
+
+    PageUtils queryPageBase(Long catelogId, Map<String, Object> params);
+
 }
 

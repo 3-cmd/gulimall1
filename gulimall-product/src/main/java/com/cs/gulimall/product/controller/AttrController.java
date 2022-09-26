@@ -6,11 +6,7 @@ import java.util.Map;
 import com.cs.gulimall.product.vo.AttrResponseVo;
 import com.cs.gulimall.product.vo.AttrVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.cs.gulimall.product.entity.AttrEntity;
 import com.cs.gulimall.product.service.AttrService;
@@ -44,11 +40,17 @@ public class AttrController {
 //    }
     @RequestMapping("/base/list/{catelogId}")
     //@RequiresPermissions("product:attr:list")
-    public R listByPage(@PathVariable("catelogId") Long catelogId, @RequestParam Map<String, Object> params){
-        PageUtils page = attrService.queryPage(catelogId,params);
+    public R listByPageBase(@PathVariable("catelogId") Long catelogId, @RequestParam Map<String, Object> params){
+        PageUtils page = attrService.queryPageBase(catelogId,params);
         return R.ok().put("page", page);
     }
+    @GetMapping("/sale/list/{catelogId}")
+    public R getSaleListSale(@RequestParam Map<String,Object> params,@PathVariable("catelogId") Long catelogId){
+        PageUtils page = attrService.queryPageSale(catelogId, params);
 
+        return  R.ok().put("page",page);
+
+    }
     /**
      * 信息
      */
@@ -91,5 +93,6 @@ public class AttrController {
 
         return R.ok();
     }
+
 
 }

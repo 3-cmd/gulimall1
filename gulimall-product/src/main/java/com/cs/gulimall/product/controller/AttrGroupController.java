@@ -4,7 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cs.gulimall.product.entity.AttrAttrgroupRelationEntity;
+import com.cs.gulimall.product.entity.AttrEntity;
 import com.cs.gulimall.product.entity.CategoryEntity;
+import com.cs.gulimall.product.service.AttrAttrgroupRelationService;
+import com.cs.gulimall.product.vo.AttrAttrgroupRelationVo;
+import com.cs.gulimall.product.vo.AttrGroupWithAttrsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +33,8 @@ import com.cs.common.utils.R;
 public class AttrGroupController {
     @Autowired
     private AttrGroupService attrGroupService;
+    @Autowired
+    private AttrAttrgroupRelationService attrAttrgroupRelationService;
 
     /**
      * 列表
@@ -38,13 +46,25 @@ public class AttrGroupController {
         PageUtils page = attrGroupService.queryPageByCatelogId(params,catelogId);
         return R.ok().put("page", page);
     }
+    @GetMapping("/{attrgroupId}/attr/relation")
+    public R attrRelation(@PathVariable("attrgroupId") Long attrgroupId){
+        List<AttrEntity> list=attrGroupService.getAttrGroupWithAttrsByAttrGropuId(attrgroupId);
+        return R.ok().put("data",list);
 
+    }
     /**
      * 查询全部的信息
-     * @param attrGroupId
+     * @param
      * @return
      */
-    @GetMapping("/{}/attr/relation")
+    @GetMapping("{catelogId}/withattr")
+    public R getAttrGroupWithAttrs(@PathVariable("catelogId") Long catelogId){
+        //1.查出当前分类下的所有属性分组
+        //2.查出每个属性分组的所有属性
+        List<AttrGroupWithAttrsVo> list = attrGroupService.getAttrGroupWithAttrs(catelogId);
+        return R.ok().put("data",list);
+    }
+
 
 
     /**
@@ -92,5 +112,17 @@ public class AttrGroupController {
 
         return R.ok();
     }
-
+    ///product/attrgroup/attr/relation/delete
+    //移除关联关系
+    @RequestMapping("/attr/relation/delete")
+    public R removeRelation(@RequestBody AttrAttrgroupRelationVo[] relationVos){
+        attrAttrgroupRelationService.removeRelation(relationVos);
+        return R.ok();
+    }
+    //将给属性分组没有关联的属性展示出来,已经关联的则不进行展示
+    @GetMapping("/{attrgroupId}/noattr/relation")
+    public R getAttrGroupNoAttr(@PathVariable("attrgroupId") Long attrgroupId,@RequestParam Map<String,Object> params){
+        PageUtils pageUtils=attrAttrgroupRelationService.getNoAttr(attrgroupId,params);
+        return R.ok().put("page",pageUtils);
+    }
 }

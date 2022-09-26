@@ -1,12 +1,21 @@
 package com.cs.gulimall.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cs.gulimall.product.dao.AttrAttrgroupRelationDao;
+import com.cs.gulimall.product.dao.AttrDao;
 import com.cs.gulimall.product.dao.CategoryDao;
+import com.cs.gulimall.product.entity.AttrAttrgroupRelationEntity;
+import com.cs.gulimall.product.entity.AttrEntity;
 import com.cs.gulimall.product.entity.CategoryEntity;
+import com.cs.gulimall.product.service.AttrService;
+import com.cs.gulimall.product.vo.AttrAttrgroupRelationVo;
+import com.cs.gulimall.product.vo.AttrGroupWithAttrsVo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -26,6 +35,12 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
     private AttrGroupDao attrGroupDao;
     @Autowired
     private CategoryDao categoryDao;
+    @Autowired
+    private AttrDao attrDao;
+    @Autowired
+    private AttrService attrService;
+    @Autowired
+    private AttrAttrgroupRelationDao attrAttrgroupRelationDao;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -89,6 +104,30 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
         return (Long[]) list.toArray(new Long[list.size()]);
     }
 
+    @Override
+    public List<AttrGroupWithAttrsVo> getAttrGroupWithAttrs(Long catelogId) {
+        LambdaQueryWrapper<AttrGroupEntity> wrapper=new LambdaQueryWrapper<>();
+        wrapper.eq(AttrGroupEntity::getCatelogId,catelogId);
+        List<AttrGroupEntity> attrGroupEntities = attrGroupDao.selectList(wrapper);
+        List<AttrGroupWithAttrsVo> attrGroupWithAttrs= attrGroupEntities.stream().map(attrGroupEntity -> {
+            AttrGroupWithAttrsVo attrGroupWithAttrsVo = new AttrGroupWithAttrsVo();
+            BeanUtils.copyProperties(attrGroupEntity, attrGroupWithAttrsVo);
+
+            List<AttrAttrgroupRelationEntity> attrAttrgroupRelationEntities = attrAttrgroupRelationDao.selectList(new LambdaQueryWrapper<AttrAttrgroupRelationEntity>().eq(AttrAttrgroupRelationEntity::getAttrGroupId, attrGroupEntity.getAttrGroupId()));
+            List<AttrEntity> collect = attrAttrgroupRelationEntities.stream().map(attrAttrgroupRelation -> {
+                LambdaQueryWrapper<AttrEntity> attrEntityWrapper = new LambdaQueryWrapper<>();
+                attrEntityWrapper.eq(AttrEntity::getAttrId, attrAttrgroupRelation.getAttrId());
+                AttrEntity attrEntity = attrDao.selectOne(attrEntityWrapper);
+                return attrEntity;
+            }).collect(Collectors.toList());
+            attrGroupWithAttrsVo.setAttrs(collect);
+            return attrGroupWithAttrsVo;
+        }).collect(Collectors.toList());
+        return attrGroupWithAttrs;
+    }
+
+
+
     /**
      * 根据传递过来的 父id 查询到该 父id作为catId的一条数据,然后递归查询处每条数据封装到list集合中,这个递归方法是找到一条数据以及其的上一代
      *
@@ -104,4 +143,18 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
         }
         return paths;
     }
+    @Override
+    public List<AttrEntity> getAttrGroupWithAttrsByAttrGropuId(Long attrgroupId) {
+        LambdaQueryWrapper<AttrAttrgroupRelationEntity> wrapper=new LambdaQueryWrapper<>();
+        wrapper.eq(AttrAttrgroupRelationEntity::getAttrGroupId,attrgroupId);
+        List<AttrAttrgroupRelationEntity> attrAttrgroupRelationEntities = attrAttrgroupRelationDao.selectList(wrapper);
+        List<Long> collect = attrAttrgroupRelationEntities.stream().map(attrAttrgroupRelationEntity -> {
+            Long attrId = attrAttrgroupRelationEntity.getAttrId();
+            return attrId;
+        }).collect(Collectors.toList());
+        List<AttrEntity> attrEntities = attrService.listByIds(collect);
+        return attrEntities;
+    }
+
+
 }

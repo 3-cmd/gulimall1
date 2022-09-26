@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cs.gulimall.product.vo.BrandVo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +40,12 @@ public class CategoryBrandRelationController {
     public R list(@RequestParam Map<String, Object> params){
         PageUtils page = categoryBrandRelationService.queryPage(params);
         return R.ok().put("page", page);
+    }
+    @GetMapping("/brands/list")
+    //@RequiresPermissions("product:categorybrandrelation:list")
+    public R getByCatId(@RequestParam Long catId){
+        List<CategoryBrandRelationEntity> list = categoryBrandRelationService.pageByCatId(catId);
+        return R.ok().put("data", list);
     }
     @GetMapping("/catelog/list")
     public R getRelationList(@RequestParam Long brandId){

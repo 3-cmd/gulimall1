@@ -16,6 +16,15 @@
         <result property="showDesc" column="show_desc"/>
         <result property="valueType" column="value_type"/>
     </resultMap>
+    <select id="notInAttrGroup" resultType="com.cs.gulimall.product.entity.AttrEntity">
+        SELECT * FROM pms_attr
+            <where>
+                <foreach collection="attrIdList" open=" attr_id not in (  "  close=" ) " item="attrId">
+                    #{attrId}
+                </foreach>
+            </where>
+
+    </select>
 
 
 </mapper>

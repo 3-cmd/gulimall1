@@ -40,15 +40,19 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
     private AttrGroupDao attrGroupDao;
     @Autowired
     private AttrGroupService attrGroupService;
+    @Autowired
+    private AttrAttrgroupRelationDao attrAttrgroupRelationDao;
 
     @Override
-    public PageUtils queryPage(Long catelogId, Map<String, Object> params) {
+    public PageUtils queryPageSale(Long catelogId, Map<String, Object> params) {
         String key = (String) params.get("key");
         if (key == null) {
             LambdaQueryWrapper<AttrEntity> wrapper = new LambdaQueryWrapper<>();
             IPage<AttrEntity> page = this.page(
                     new Query<AttrEntity>().getPage(params),
                     wrapper.eq(catelogId != 0, AttrEntity::getCatelogId, catelogId));
+            List<AttrEntity> collect = page.getRecords().stream().filter(attrEntity -> attrEntity.getAttrType() == 0).collect(Collectors.toList());
+            page.setRecords(collect);
             return new PageUtils(page);
         }
         LambdaQueryWrapper<AttrEntity> wrapper = new LambdaQueryWrapper<>();
@@ -62,6 +66,8 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
                                     .or().like(AttrEntity::getValueSelect, key);
                         })
         );
+        List<AttrEntity> collect1 = page.getRecords().stream().filter(attrEntity -> attrEntity.getAttrType() == 0).collect(Collectors.toList());
+        page.setRecords(collect1);
         PageUtils pageUtils = new PageUtils(page);
         List<AttrEntity> records = page.getRecords();
         List<AttrResponseVo> collect = records.stream().map((attrEntity) -> {
@@ -87,7 +93,56 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         pageUtils.setList(collect);
         return pageUtils;
     }
-
+    @Override
+    public PageUtils queryPageBase(Long catelogId, Map<String, Object> params) {
+        String key = (String) params.get("key");
+        if (key == null) {
+            LambdaQueryWrapper<AttrEntity> wrapper = new LambdaQueryWrapper<>();
+            IPage<AttrEntity> page = this.page(
+                    new Query<AttrEntity>().getPage(params),
+                    wrapper.eq(catelogId != 0, AttrEntity::getCatelogId, catelogId));
+            List<AttrEntity> collect = page.getRecords().stream().filter(attrEntity -> attrEntity.getAttrType() == 1).collect(Collectors.toList());
+            page.setRecords(collect);
+            return new PageUtils(page);
+        }
+        LambdaQueryWrapper<AttrEntity> wrapper = new LambdaQueryWrapper<>();
+        IPage<AttrEntity> page = this.page(
+                new Query<AttrEntity>().getPage(params),
+                wrapper.eq(catelogId != 0, AttrEntity::getCatelogId, catelogId)
+                        .and(!key.isBlank(), obj -> {
+                            obj.like(AttrEntity::getAttrId, key)
+                                    .or().like(AttrEntity::getAttrName, key)
+                                    .or().like(AttrEntity::getAttrType, key)
+                                    .or().like(AttrEntity::getValueSelect, key);
+                        })
+        );
+        List<AttrEntity> collect1 = page.getRecords().stream().filter(attrEntity -> attrEntity.getAttrType() == 1).collect(Collectors.toList());
+        page.setRecords(collect1);
+        PageUtils pageUtils = new PageUtils(page);
+        List<AttrEntity> records = page.getRecords();
+        List<AttrResponseVo> collect = records.stream().map((attrEntity) -> {
+            AttrResponseVo responseVo = new AttrResponseVo();
+            BeanUtils.copyProperties(attrEntity, responseVo);
+            //设置所属分类名称
+            LambdaQueryWrapper<CategoryEntity> wrapper1 = new LambdaQueryWrapper<>();
+            wrapper1.eq(CategoryEntity::getCatId, attrEntity.getCatelogId());
+            CategoryEntity category = categoryService.getOne(wrapper1);
+            responseVo.setCatelogName(category.getName());
+            //设置所属分组名称
+            LambdaQueryWrapper<AttrAttrgroupRelationEntity> wrapper2 = new LambdaQueryWrapper<>();
+            wrapper2.eq(AttrAttrgroupRelationEntity::getAttrId, attrEntity.getAttrId());
+            AttrAttrgroupRelationEntity relationEntity = relationDao.selectOne(wrapper2);
+            if (relationEntity != null) {
+                LambdaQueryWrapper<AttrGroupEntity> wrapper3 = new LambdaQueryWrapper<>();
+                wrapper3.eq(AttrGroupEntity::getAttrGroupId, relationEntity.getAttrGroupId());
+                AttrGroupEntity attrGroupEntity = attrGroupDao.selectOne(wrapper3);
+                responseVo.setGroupName(attrGroupEntity.getAttrGroupName());
+            }
+            return responseVo;
+        }).collect(Collectors.toList());
+        pageUtils.setList(collect);
+        return pageUtils;
+    }
     @Override
     @Transactional
     public void save(AttrVo attr) {
@@ -136,5 +191,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         relationDao.update(attrAttrgroupRelationEntity,wrapper);
 
     }
+
+
 
 }

@@ -3,7 +3,8 @@ spring:
     name: member
   cloud:
     nacos:
-      server-addr: 127.0.0.1:8848 #nacos服务地址
+      discovery:
+        server-addr: 127.0.0.1:8848 #nacos服务地址
   datasource:
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
